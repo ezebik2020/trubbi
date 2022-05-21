@@ -1,0 +1,49 @@
+version: '3.2'
+services:      
+    node:
+        container_name: trubbi-node
+        image: "node:16.14.2-slim"
+        restart: always
+        user: node
+        volumes:
+            - ./:/usr/applications
+        working_dir: /usr/applications
+        ports:
+            - "3020:3009"
+            - "9670:9662"
+        entrypoint: ./start.sh
+        networks:
+            - fireware_default
+
+    fiware-orion:
+        container_name: fiware-orion
+        image: fiware/orion:1.13.0
+        command: -logLevel DEBUG -noCache -dbhost mongo
+        restart: always
+        ports:
+            - 1026:1026
+        networks:
+            - fireware_default
+        depends_on:
+            - mongo
+
+    mongo:
+        container_name: trubbi-mongo
+        image: mongo:3.2
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongodb_data_volume:/data/db
+            - mongodb_config_volume:/data/configdb
+        networks:
+            - fireware_default
+
+networks:
+  fireware_default:
+volumes:
+    mongodb_data_volume:
+    mongodb_config_volume:
